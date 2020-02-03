@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+*.pb
 
 # C extensions
 *.so
@@ -127,3 +128,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+detrakt/faster_rcnn_inception_resnet_v2_atrous_oid_v4_2018_12_12/
+detrakt/data/test_images/
+*.mp4
