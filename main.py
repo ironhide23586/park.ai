@@ -10,7 +10,11 @@ import detrakt.helpers as helpers
 import detrakt.detector as detector
 from detrakt.tracker import *
 
+from object_detection.utils.visualization_utils import STANDARD_COLORS
+from PIL.ImageColor import getrgb
+
 import time
+# import uuid
 
 # Global variables to be used by funcitons of VideoFileClop
 frame_count = 0  # frame counter
@@ -21,7 +25,8 @@ min_hits = 1  # no. of consecutive matches needed to establish a track
 
 tracker_list = []  # list for trackers
 # list for track ID
-track_id_list = deque(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'])
+# track_id_list = deque(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R'])
+track_id_list = deque(map(str, list(range(100))))
 
 
 def assign_detections_to_trackers(trackers, detections, iou_thrd=0.3):
@@ -150,7 +155,10 @@ def pipeline(img):
             if debug:
                 print('updated box: ', x_cv2)
                 print()
-            img = helpers.draw_box_label(img, x_cv2)  # Draw the bounding boxes on the images
+            r, g, b = getrgb(STANDARD_COLORS[int(trk.id)])
+            color_bgr = (b, g, r)
+            img = helpers.draw_box_label(img, x_cv2, box_id=STANDARD_COLORS[int(trk.id)],
+                                         box_color=color_bgr)  # Draw the bounding boxes on the images
     # Book keeping
     deleted_tracks = filter(lambda x: x.no_losses > max_age, tracker_list)
     for trk in deleted_tracks:
@@ -164,7 +172,8 @@ def pipeline(img):
 
 if __name__ == "__main__":
 
-    in_fpath = 'data/parking/vlc-record-2020-01-24-10h26m18s-rtsp___198.245.194.212_axis-media_media.amp-.mp4'
+    # in_fpath = 'data/parking/vlc-record-2020-01-24-10h26m18s-rtsp___198.245.194.212_axis-media_media.amp-.mp4'
+    in_fpath = 'data/parking/vlc-record-2020-01-27-07h25m46s-Jackson Hole Airport Parking Lot Camera - South-.mp4'
     out_fpath = in_fpath.replace('.mp4', '-tracked.mp4')
     debug = False
 
@@ -181,7 +190,7 @@ if __name__ == "__main__":
     else:  # test on a video file.
         start = time.time()
         output = out_fpath
-        clip1 = VideoFileClip(in_fpath).subclip(34, 45)
+        clip1 = VideoFileClip(in_fpath).subclip(3550, 3560)
         clip = clip1.fl_image(pipeline)
         clip.write_videofile(out_fpath, audio=False)
         end = time.time()

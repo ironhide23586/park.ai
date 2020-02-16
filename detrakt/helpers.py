@@ -104,7 +104,7 @@ def convert_to_cv2bbox(bbox, img_dim = (1280, 720)):
     return (left, top, right, bottom)
     
     
-def draw_box_label(img, bbox_cv2, box_color=(0, 255, 255), show_label=True):
+def draw_box_label(img, bbox_cv2, box_color=(0, 255, 255), box_id=None, show_label=True):
     '''
     Helper funciton for drawing the bounding boxes and the labels
     bbox_cv2 = [left, top, right, bottom]
@@ -121,11 +121,14 @@ def draw_box_label(img, bbox_cv2, box_color=(0, 255, 255), show_label=True):
     if show_label:
         # Draw a filled box on top of the bounding box (as the background for the labels)
         cv2.rectangle(img, (left-2, top-45), (right+2, top), box_color, -1, 1)
-        
-        # Output the labels that show the x and y coordinates of the bounding box center.
-        text_x= 'x='+str((left+right)/2)
-        cv2.putText(img,text_x,(left,top-25), font, font_size, font_color, 1, cv2.LINE_AA)
-        text_y= 'y='+str((top+bottom)/2)
-        cv2.putText(img,text_y,(left,top-5), font, font_size, font_color, 1, cv2.LINE_AA)
+
+        text_x = str(box_id)
+        cv2.putText(img, text_x, (left, top-25), font, font_size, font_color, 1, cv2.LINE_AA)
+
+        # # Output the labels that show the x and y coordinates of the bounding box center.
+        # text_x= 'x='+str((left+right)/2)
+        # cv2.putText(img,text_x,(left,top-25), font, font_size, font_color, 1, cv2.LINE_AA)
+        # text_y= 'y='+str((top+bottom)/2)
+        # cv2.putText(img,text_y,(left,top-5), font, font_size, font_color, 1, cv2.LINE_AA)
     
     return img    

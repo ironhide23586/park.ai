@@ -80,7 +80,7 @@ class CarDetector(object):
         im_resized = cv2.resize(im, (new_w, new_h))
         return im_resized
 
-    def get_localization(self, image, visual=True):
+    def get_localization(self, image_in, visual=False):
         
         """Determines the locations of the cars in the image
 
@@ -121,14 +121,21 @@ class CarDetector(object):
 
 
         with self.detection_graph.as_default():
-              image = self.smart_resize(image)
+              image = self.smart_resize(image_in)
               image_expanded = np.expand_dims(image, axis=0)
               (boxes, scores, classes, num_detections) = self.sess.run(
                   [self.boxes, self.scores, self.classes, self.num_detections],
                   feed_dict={self.image_tensor: image_expanded})
+
+              car_class_id = 571
+              filt = classes == car_class_id
+              boxes = boxes[filt]
+              scores = scores[filt]
+              classes = classes[filt]
+              num_detections = scores.shape[0]
           
               if visual:
-                  im = image.copy()
+                  im = image_in.copy()
                   vis_util.visualize_boxes_and_labels_on_image_array(
                       im,
                       np.squeeze(boxes),
@@ -146,31 +153,31 @@ class CarDetector(object):
               cls = classes.tolist()
               
               # The ID for car in COCO data set is 3 
-              idx_vec = [i for i, v in enumerate(cls) if v == 3 and scores[i] > 0.3]
+              idx_vec = [i for i, v in enumerate(cls) if v == car_class_id and scores[i] > 0.3]
               
-              if len(idx_vec) ==0:
+              if len(idx_vec) == 0:
                   print('no detection!')
                   self.car_boxes = []  
               else:
                   tmp_car_boxes=[]
                   for idx in idx_vec:
-                      dim = image.shape[0:2]
+                      dim = image_in.shape[0:2]
                       box = self.box_normal_to_pixel(boxes[idx], dim)
                       box_h = box[2] - box[0]
                       box_w = box[3] - box[1]
                       ratio = box_h / (box_w + 0.01)
                       if ((ratio < 0.8) and (box_h / dim[0] > .026) and (box_w / dim[1] > .015)):
                           tmp_car_boxes.append(box)
-                          print(box, ', confidence: ', scores[idx], 'ratio:', ratio)
+                          # print(box, ', confidence: ', scores[idx], 'ratio:', ratio)
                       else:
                           print('wrong ratio or wrong size, ', box, ', confidence: ', scores[idx], 'ratio:', ratio)
                   self.car_boxes = tmp_car_boxes
-             
         return self.car_boxes
-        
+
+
 if __name__ == '__main__':
         # Test the performance of the detector
-        det =CarDetector()
+        det = CarDetector()
         os.chdir(cwd)
         TEST_IMAGE_PATHS= glob(os.path.join('test_images/', '*.jpg'))
         
